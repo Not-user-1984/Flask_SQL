@@ -33,13 +33,31 @@ def get_bookings():
     return jsonify(bookings)
 
 
+@app.route('/chesk', methods=['GET'])
+@measure_time
+def chesk():
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT aircraft_code, fare_conditions, count(*)
+                FROM seats
+                GROUP BY aircraft_code, fare_conditions
+                ORDER BY aircraft_code, fare_conditions
+                LIMIT 100
+            """)
+            seats = cur.fetchall()
+    return jsonify(seats)
+
+
 @app.route('/bookings/<book_ref>', methods=['GET'])
 @measure_time
 def get_booking(book_ref):
     """Получение бронирования по book_ref."""
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute('SELECT * FROM bookings WHERE book_ref = %s;', (book_ref,))
+            cur.execute(
+                'SELECT * FROM bookings WHERE book_ref = %s;', (book_ref,)
+                )
             booking = cur.fetchone()
     return jsonify(booking) if booking else jsonify({'message': 'Booking not found'}), 404
 
@@ -49,16 +67,13 @@ def get_booking(book_ref):
 def create_booking():
     """Создание нового бронирования."""
     data = request.json
-    book_ref = data.get('book_ref')
-    book_date = data.get('book_date')
-    total_amount = data.get('total_amount')
-
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                'INSERT INTO bookings (book_ref, book_date, total_amount) VALUES (%s, %s, %s) RETURNING *;',
-                (book_ref, book_date, total_amount)
-            )
+            cur.execute("""
+                INSERT INTO bookings (book_ref, book_date, total_amount)
+                VALUES (%s, %s, %s)
+                RETURNING *
+            """, (data['book_ref'], data['book_date'], data['total_amount']))
             booking = cur.fetchone()
             conn.commit()
     return jsonify(booking), 201
