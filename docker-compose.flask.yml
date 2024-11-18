@@ -11,7 +11,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./db.sql:/docker-entrypoint-initdb.d/db.sql
+    - ./db.sql:/db.sql
     restart: always
 
   flask:

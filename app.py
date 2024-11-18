@@ -1,8 +1,7 @@
 from flask import Flask, jsonify, request
 import psycopg2
-
-from functools import wraps
-import time
+import json
+from utility import measure_time
 
 app = Flask(__name__)
 
@@ -11,18 +10,6 @@ DB_HOST = 'localhost'
 DB_NAME = 'demo'
 DB_USER = 'postgres'
 DB_PASSWORD = 'postgres'
-
-
-def measure_time(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"Function {func.__name__} executed in {execution_time:.4f} seconds")
-        return result
-    return wrapper
 
 
 def get_db_connection():
@@ -58,6 +45,7 @@ def get_booking(book_ref):
 
 
 @app.route('/bookings', methods=['POST'])
+@measure_time
 def create_booking():
     """Создание нового бронирования."""
     data = request.json
@@ -77,6 +65,7 @@ def create_booking():
 
 
 @app.route('/bookings/<book_ref>', methods=['PUT'])
+@measure_time
 def update_booking(book_ref):
     """Обновление бронирования по book_ref."""
     data = request.json
@@ -93,7 +82,9 @@ def update_booking(book_ref):
             conn.commit()
     return jsonify(booking) if booking else jsonify({'message': 'Booking not found'}), 404
 
+
 @app.route('/bookings/<book_ref>', methods=['DELETE'])
+@measure_time
 def delete_booking(book_ref):
     """Удаление бронирования по book_ref."""
     with get_db_connection() as conn:
@@ -102,6 +93,26 @@ def delete_booking(book_ref):
             booking = cur.fetchone()
             conn.commit()
     return jsonify(booking) if booking else jsonify({'message': 'Booking not found'}), 404
+
+
+@app.route('/aircrafts', methods=['POST'])
+@measure_time
+def add_aircraft():
+    data = request.json
+    aircraft_code = data['aircraft_code']
+    model = json.dumps(data['model'])
+    range = data['range']
+
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO aircrafts_data (aircraft_code, model, range) VALUES (%s, %s, %s)",
+                (aircraft_code, model, range)
+            )
+            conn.commit()
+
+    return jsonify({"message": "Aircraft added successfully"}), 201
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)

@@ -2,9 +2,8 @@ from flask import Flask, jsonify, request
 from sqlalchemy import create_engine, Column, String, Date, Float, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from functools import wraps
-import time
 
+from utility import measure_time
 app = Flask(__name__)
 
 # Параметры подключения к базе данных
@@ -18,18 +17,6 @@ DB_PASSWORD = 'postgres'
 engine = create_engine(f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}')
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
-
-
-def measure_time(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"Function {func.__name__} executed in {execution_time:.4f} seconds")
-        return result
-    return wrapper
 
 
 class Booking(Base):
