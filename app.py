@@ -33,20 +33,20 @@ def get_bookings():
     return jsonify(bookings)
 
 
-@app.route('/chesk', methods=['GET'])
-@measure_time
-def chesk():
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("""
-                SELECT aircraft_code, fare_conditions, count(*)
-                FROM seats
-                GROUP BY aircraft_code, fare_conditions
-                ORDER BY aircraft_code, fare_conditions
-                LIMIT 100
-            """)
-            seats = cur.fetchall()
-    return jsonify(seats)
+# @app.route('/chesk', methods=['GET'])
+# @measure_time
+# def chesk():
+#     with get_db_connection() as conn:
+#         with conn.cursor() as cur:
+#             cur.execute("""
+#                 SELECT aircraft_code, fare_conditions, count(*)
+#                 FROM seats
+#                 GROUP BY aircraft_code, fare_conditions
+#                 ORDER BY aircraft_code, fare_conditions
+#                 LIMIT 100
+#             """)
+#             seats = cur.fetchall()
+#     return jsonify(seats)
 
 
 @app.route('/bookings/<book_ref>', methods=['GET'])

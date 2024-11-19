@@ -119,3 +119,115 @@ INSERT INTO databases VALUES (FALSE, 'Oracle');
 INSERT INTO databases VALUES (TRUE, 'MySQL');
 INSERT INTO databases VALUES (FALSE, 'MS SQL Server');
 ```
+
+
+Для демонстрации работы различных типов JOIN (LEFT JOIN, RIGHT JOIN, INNER JOIN) на практике, можно составить несколько запросов к базе данных, описанной в диаграмме схемы данных. Вот несколько примеров:
+
+### 1. INNER JOIN (Центральный JOIN)
+**Задача:** Получить информацию о рейсах, включая данные о самолетах и аэропортах отправления и прибытия.
+
+```sql
+SELECT 
+    f.flight_id, 
+    f.flight_no, 
+    f.scheduled_departure, 
+    f.scheduled_arrival, 
+    dep.airport_name AS departure_airport, 
+    arr.airport_name AS arrival_airport, 
+    a.model AS aircraft_model
+FROM 
+    Flights f
+INNER JOIN 
+    Airports dep ON f.departure_airport = dep.airport_code
+INNER JOIN 
+    Airports arr ON f.arrival_airport = arr.airport_code
+INNER JOIN 
+    Aircrafts a ON f.aircraft_code = a.aircraft_code;
+```
+
+### 2. LEFT JOIN
+**Задача:** Получить информацию о всех бронированиях, включая данные о билетах, даже если билеты не были оформлены.
+
+```sql
+SELECT 
+    b.book_ref, 
+    b.book_date, 
+    b.total_amount, 
+    t.ticket_no, 
+    t.passenger_id, 
+    t.passenger_name
+FROM 
+    Bookings b
+LEFT JOIN 
+    Tickets t ON b.book_ref = t.book_ref;
+```
+
+### 3. RIGHT JOIN
+**Задача:** Получить информацию о всех билетах, включая данные о бронированиях, даже если бронирования не были сделаны.
+
+```sql
+SELECT 
+    t.ticket_no, 
+    t.passenger_id, 
+    t.passenger_name, 
+    b.book_ref, 
+    b.book_date, 
+    b.total_amount
+FROM 
+    Bookings b
+RIGHT JOIN 
+    Tickets t ON b.book_ref = t.book_ref;
+```
+
+### 4. LEFT JOIN с условием
+**Задача:** Получить информацию о всех рейсах, включая данные о посадочных талонах, даже если посадочные талоны не были выданы.
+
+```sql
+SELECT 
+    f.flight_id, 
+    f.flight_no, 
+    f.scheduled_departure, 
+    f.scheduled_arrival, 
+    bp.boarding_no, 
+    bp.seat_no
+FROM 
+    Flights f
+LEFT JOIN 
+    Boarding_passes bp ON f.flight_id = bp.flight_id;
+```
+
+### 5. RIGHT JOIN с условием
+**Задача:** Получить информацию о всех посадочных талонах, включая данные о рейсах, даже если рейсы не были назначены.
+
+```sql
+SELECT 
+    bp.boarding_no, 
+    bp.seat_no, 
+    f.flight_id, 
+    f.flight_no, 
+    f.scheduled_departure, 
+    f.scheduled_arrival
+FROM 
+    Flights f
+RIGHT JOIN 
+    Boarding_passes bp ON f.flight_id = bp.flight_id;
+```
+
+### 6. INNER JOIN с условием
+**Задача:** Получить информацию о всех билетах, включая данные о перелетах, только если перелеты были оформлены.
+
+```sql
+SELECT 
+    t.ticket_no, 
+    t.passenger_id, 
+    t.passenger_name, 
+    tf.flight_id, 
+    tf.fare_conditions, 
+    tf.amount
+FROM 
+    Tickets t
+INNER JOIN 
+    Ticket_flights tf ON t.ticket_no = tf.ticket_no;
+```
+
+Эти запросы демонстрируют различные типы JOIN и их применение в реальных сценариях работы с базой данных.
