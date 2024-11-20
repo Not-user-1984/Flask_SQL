@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Queries</title>
+    <style>
+        .loading {
+            display: none;
+            border: 16px solid #f3f3f3;
+            border-top: 16px solid #3498db;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-container {
+            margin-top: 20px;
+        }
+
+        .results-container h2 {
+            margin-bottom: 10px;
+        }
+
+        .results-container pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>SQL Queries</h1>
+    <div>
+        <label for="limit">Number of records:</label>
+        <input type="number" id="limit" placeholder="Number of records" min="1" value="10">
+    </div>
+    <button onclick="fetchFlights()">INNER JOIN: Flights</button>
+    <button onclick="fetchBookingsLeft()">LEFT JOIN: Bookings</button>
+
+    <div id="loading" class="loading"></div>
+
+    <div class="results-container">
+        <h2>Results</h2>
+        <pre id="results"></pre>
+    </div>
+
+    <script>
+        function fetchFlights() {
+            const limit = document.getElementById('limit').value;
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+
+            loading.style.display = 'block';
+            results.textContent = '';
+
+            fetch(`/flights?limit=${limit}`)
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    results.textContent = JSON.stringify(data, null, 2);
+                });
+        }
+
+        function fetchBookingsLeft() {
+            const limit = document.getElementById('limit').value;
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+
+            loading.style.display = 'block';
+            results.textContent = '';
+
+            fetch(`/bookings_left?limit=${limit}`)
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    results.textContent = JSON.stringify(data, null, 2);
+                });
+        }
+    </script>
+</body>
+</html>
