@@ -10,7 +10,7 @@ from sqlalchemy import (
     ForeignKey,
 )
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, aliased
 from sqlalchemy.sql import func
 from utility import measure_time
 
@@ -231,18 +231,25 @@ def get_flights():
     """Получение информации о рейсах с INNER JOIN."""
     limit = request.args.get("limit", default=10, type=int)
     session = Session()
+
+    # Создаем псевдонимы для таблицы Airport
+    DepartureAirport = aliased(Airport, name="departure_airport")
+    ArrivalAirport = aliased(Airport, name="arrival_airport")
+
     flights = (
         session.query(
             Flight.flight_id,
             Flight.flight_no,
             Flight.scheduled_departure,
             Flight.scheduled_arrival,
-            Airport.airport_name.label("departure_airport"),
-            Airport.airport_name.label("arrival_airport"),
+            DepartureAirport.airport_name.label("departure_airport"),
+            ArrivalAirport.airport_name.label("arrival_airport"),
             Aircraft.model.label("aircraft_model"),
         )
-        .join(Airport, Flight.departure_airport == Airport.airport_code)
-        .join(Airport, Flight.arrival_airport == Airport.airport_code, aliased=True)
+        .join(
+            DepartureAirport, Flight.departure_airport == DepartureAirport.airport_code
+        )
+        .join(ArrivalAirport, Flight.arrival_airport == ArrivalAirport.airport_code)
         .join(Aircraft, Flight.aircraft_code == Aircraft.aircraft_code)
         .limit(limit)
         .all()
